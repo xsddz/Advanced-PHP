@@ -33,14 +33,16 @@ if (false === $islisten) {
     printf("[OK]\n");
 }
 
-// step4: access connection
+// step4: access connection and handle
 printf("\n");
 while(true) {
-    $res = socket_accept($skt);
-    if (false === $res) {
+    $cskt = socket_accept($skt);
+    if (false === $cskt) {
         printf("access connection error\n");
     } else {
-        handle_connection($res);
+        socket_getpeername($cskt, $csktaddr, $csktport);
+        printf("accept connection from [{$csktaddr}:{$csktport}]\n");
+        handle_connection($cskt, $csktaddr, $csktport);
     }
 }
 printf("\n");
@@ -51,25 +53,37 @@ socket_close($skt);
 printf("[OK]\n");
 
 
-function handle_connection($skt) {
-    socket_getpeername($skt, $sktaddr, $sktport);
-    printf("handle connection from [{$sktaddr}:{$sktport}]\n");
 
-    $msg = "";
-    while($res = socket_recv($skt, $buf, 1, MSG_WAITALL)) {
-        if ($buf !== "\n") {
-            $msg .= $buf;
-            continue;
-        }
-
+function handle_connection($cskt, $csktaddr, $csktport) {
+    printf("handle connection from [{$csktaddr}:{$csktport}]\n");
+    while(true) {
+        // read a line from connection
+        $msg = skt_recv_line($cskt);
         if (!empty($msg)) {
-            printf("recv msg from [{$sktaddr}:{$sktport}] {$msg}\n");
-            $msg = "";
+            printf("recv msg from [{$csktaddr}:{$csktport}] {$msg}\n");
         }
 
         if ($msg === 'Bye') {
             break;
         }
     }
+
+    // colse connection socket
+    socket_close($cskt);
+    printf("close connection from [{$csktaddr}:{$csktport}]\n");
+}
+
+function skt_recv_line($cskt) {
+    $line = "";
+    while(true) {
+        // read a char
+        $res = socket_recv($cskt, $buf, 1, MSG_WAITALL);
+        if ($buf == "\n") {
+            break;
+        } else {
+            $line .= $buf;
+        }
+    }
+    return $line;
 }
 
