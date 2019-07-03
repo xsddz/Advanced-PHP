@@ -41,34 +41,18 @@ Yps_CommonUtils::failCheck($islisten, false, "listen for connection");
 
 function handle_connection($cskt, $csktaddr, $csktport) {
     printf("handle connection from [{$csktaddr}:{$csktport}]\n");
+    // read from connection and print
     while(true) {
-        // read a line from connection
-        $msg = skt_recv_line($cskt);
-        if (!empty($msg)) {
-            printf("recv msg from [{$csktaddr}:{$csktport}] {$msg}\n");
-        }
+        $msg = socket_read($cskt, 2048);
+
+        printf("recv msg from [{$csktaddr}:{$csktport}] {$msg}\n");
 
         if ($msg === 'Bye') {
             break;
         }
     }
-
     // colse connection socket
     socket_close($cskt);
     printf("close connection from [{$csktaddr}:{$csktport}]\n");
-}
-
-function skt_recv_line($cskt) {
-    $line = "";
-    while(true) {
-        // read a char
-        $res = socket_recv($cskt, $buf, 1, MSG_WAITALL);
-        if ($buf == "\n") {
-            break;
-        } else {
-            $line .= $buf;
-        }
-    }
-    return $line;
 }
 

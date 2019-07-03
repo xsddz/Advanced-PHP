@@ -21,9 +21,14 @@ Yps_CommonUtils::failCheck($isconnect, false, "connent to [{$ipaddress}:{$ipport
 // send msg
 while(true) {
     $msg = readline('> ');
-    !empty($msg) && readline_add_history($msg);
 
-    socket_send($skt, $msg."\n", strlen($msg."\n"), MSG_EOF);
+    if (!empty($msg)) {
+        // add to history
+        readline_add_history($msg);
+
+        // write socket
+        socket_write($skt, $msg);
+    }
 
     if ($msg == 'Bye') {
         break;
