@@ -45,9 +45,11 @@ function handle_connection($cskt, $csktaddr, $csktport) {
     while(true) {
         $msg = socket_read($cskt, 2048);
 
-        printf("recv msg from [{$csktaddr}:{$csktport}] {$msg}\n");
+        if (!empty($msg)) {
+            printf("read msg from [{$csktaddr}:{$csktport}]: {$msg}\n");
+        }
 
-        if ($msg === 'Bye') {
+        if (empty($msg) || ($msg === 'Bye')) {
             break;
         }
     }
