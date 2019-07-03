@@ -1,56 +1,41 @@
 <?php
+require_once '../lib/CommonUtils.php';
 
 $ipaddress = '127.0.0.1';
 $ipport = '8099';
+$ipparam = isset($argv['1']) ? $argv['1'] : '';
+if (!empty($ipparam)) {
+    $ipparam = explode(':', $ipparam);
+    $ipaddress = isset($ipparam['0']) ? $ipparam['0'] : $ipaddress;
+    $ipport = isset($ipparam['1']) ? $ipparam['1'] : $ipport;
+}
 
 // step1: create a socket
-printf("create a socket\t.......\t");
 $skt = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-if (false === $skt) {
-    printf("\033[31m[FAIL]\033[0m\n");
-    exit(0);
-} else {
-    printf("[OK]\n");
-}
+Yps_CommonUtils::failCheck($skt, false, "create a socket");
 
 // step2: bind to ip:port
-printf("bind to [{$ipaddress}:{$ipport}]\t.......\t");
 $isbind = socket_bind($skt, $ipaddress, $ipport);
-if (false === $isbind) {
-    printf("\033[31m[FAIL]\033[0m\n");
-    exit(0);
-} else {
-    printf("[OK]\n");
-}
+Yps_CommonUtils::failCheck($isbind, false, "bind to [{$ipaddress}:{$ipport}]");
 
 // step3: listen for connection
-printf("listen for connection\t.......\t");
 $islisten = socket_listen($skt, 1024);
-if (false === $islisten) {
-    printf("\033[31m[FAIL]\033[0m\n");
-    exit(0);
-} else {
-    printf("[OK]\n");
-}
+Yps_CommonUtils::failCheck($islisten, false, "listen for connection");
 
-// step4: access connection and handle
-printf("\n");
+// step4: access connection and handle it
 while(true) {
     $cskt = socket_accept($skt);
-    if (false === $cskt) {
-        printf("access connection error\n");
-    } else {
-        socket_getpeername($cskt, $csktaddr, $csktport);
-        printf("accept connection from [{$csktaddr}:{$csktport}]\n");
-        handle_connection($cskt, $csktaddr, $csktport);
-    }
+    Yps_CommonUtils::failCheck($cskt, false, "access a connection");
+
+    socket_getpeername($cskt, $csktaddr, $csktport);
+    printf("accept connection from [{$csktaddr}:{$csktport}]\n");
+
+    handle_connection($cskt, $csktaddr, $csktport);
 }
-printf("\n");
 
 // step5: close socket
-printf("close socket\t.......\t");
 socket_close($skt);
-printf("[OK]\n");
+Yps_CommonUtils::failCheck($islisten, false, "listen for connection");
 
 
 
